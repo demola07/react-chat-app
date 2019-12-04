@@ -9,6 +9,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import styles from "./styles";
+const firebase = require("firebase");
 
 export class LoginComponent extends Component {
   constructor() {
@@ -22,7 +23,6 @@ export class LoginComponent extends Component {
   }
 
   userTyping = (type, e) => {
-    console.log(type, e);
     switch (type) {
       case "email":
         this.setState({ email: e.target.value });
@@ -39,6 +39,18 @@ export class LoginComponent extends Component {
 
   submitLogin = e => {
     e.preventDefault();
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(this.state.email, this.state.password)
+      .then(
+        () => {
+          this.props.history.push("/dashboard");
+        },
+        err => {
+          this.setState({ loginError: err.message });
+          console.log(err);
+        }
+      );
   };
 
   render() {
