@@ -12,8 +12,8 @@ import styles from "./styles";
 const firebase = require("firebase");
 
 export class SignupComponent extends Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
 
     this.state = {
       email: null,
