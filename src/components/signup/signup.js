@@ -9,7 +9,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import styles from "./styles";
-// const firebase = require("firebase");
+const firebase = require("firebase");
 
 export class SignupComponent extends Component {
   constructor(props) {
@@ -51,7 +51,37 @@ export class SignupComponent extends Component {
     // console.log("Submitting", this.state);
     if (!this.formIsvalid()) {
       this.setState({ signupError: "Passwords do not match" });
+      return;
     }
+
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(this.state.email, this.state.password)
+      .then(
+        authRes => {
+          const userObj = {
+            email: authRes.user.email
+          };
+          firebase
+            .firestore()
+            .collection("users")
+            .doc(this.state.email)
+            .set(userObj)
+            .then(
+              () => {
+                this.props.history.push("/dashboard");
+              },
+              dbError => {
+                console.log(dbError);
+                this.setState({ signupError: "Failed to Add User" });
+              }
+            );
+        },
+        authErr => {
+          console.log(authErr);
+          this.setState({ signupError: "Failed to Add User" });
+        }
+      );
   };
 
   render() {
