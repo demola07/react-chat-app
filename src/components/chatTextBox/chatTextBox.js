@@ -23,9 +23,7 @@ class ChatTextBoxComponent extends Component {
     return txt && txt.replace(/\s/g, "").length;
   };
 
-  userClickedInput = () => {
-    console.log("user clicked input");
-  };
+  userClickedInput = () => this.props.messageReadFn();
 
   submitMessage = () => {
     if (this.messageValid(this.state.chatText)) {

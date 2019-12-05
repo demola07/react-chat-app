@@ -120,6 +120,7 @@ class DashboardComponent extends Component {
 
         {this.state.selectedChat !== null && !this.state.newChatFormVisible ? (
           <ChatTextBoxComponent
+            messageReadFn={this.messageRead}
             submitMessageFn={this.submitMessage}
           ></ChatTextBoxComponent>
         ) : null}
