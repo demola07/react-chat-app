@@ -3,10 +3,11 @@ import ChatListComponent from "../chatList/chatList";
 import { Button, withStyles } from "@material-ui/core";
 import styles from "./styles";
 import ChatViewComponent from "../chatView/chatView";
+import ChatTextBoxComponent from "../chatTextBox/chatTextBox";
 
 const firebase = require("firebase");
 
-export class DashboardComponent extends Component {
+class DashboardComponent extends Component {
   constructor() {
     super();
 
@@ -30,6 +31,28 @@ export class DashboardComponent extends Component {
   signOut = () => {
     firebase.auth().signOut();
   };
+
+  submitMessage = msg => {
+    const docKey = this.buildDockey(
+      this.state.chats[this.state.selectedChat].users.filter(
+        _usr => _usr !== this.state.email
+      )[0]
+    );
+    firebase
+      .firestore()
+      .collection("chats")
+      .doc(docKey)
+      .update({
+        messages: firebase.firestore.FieldValue.arrayUnion({
+          sender: this.state.email,
+          message: msg,
+          timestamp: Date.now()
+        }),
+        receiverHasRead: false
+      });
+  };
+
+  buildDockey = friend => [this.state.email, friend].sort().join(":");
 
   componentDidMount = () => {
     firebase.auth().onAuthStateChanged(async _usr => {
@@ -71,6 +94,12 @@ export class DashboardComponent extends Component {
             chat={this.state.chats[this.state.selectedChat]}
           ></ChatViewComponent>
         )}
+
+        {this.state.selectedChat !== null && !this.state.newChatFormVisible ? (
+          <ChatTextBoxComponent
+            submitMessageFn={this.submitMessage}
+          ></ChatTextBoxComponent>
+        ) : null}
 
         <Button onClick={this.signOut} className={classes.signOutBtn}>
           Sign Out!
