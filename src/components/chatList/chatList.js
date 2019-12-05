@@ -18,7 +18,7 @@ export class ChatListComponent extends Component {
   };
 
   selectChat = index => {
-    console.log("Select Chat", index);
+    this.props.selectChatFn(index);
   };
 
   render() {
