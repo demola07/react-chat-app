@@ -24,8 +24,9 @@ class DashboardComponent extends Component {
     console.log("New cht btn clicked");
   };
 
-  selectChat = chatIndex => {
-    this.setState({ selectedChat: chatIndex });
+  selectChat = async chatIndex => {
+    await this.setState({ selectedChat: chatIndex });
+    this.messageRead();
   };
 
   signOut = () => {
@@ -53,6 +54,28 @@ class DashboardComponent extends Component {
   };
 
   buildDockey = friend => [this.state.email, friend].sort().join(":");
+
+  messageRead = () => {
+    const docKey = this.buildDockey(
+      this.state.chats[this.state.selectedChat].users.filter(
+        _usr => _usr !== this.state.email
+      )[0]
+    );
+    if (this.clickedChatWhereNotSender(this.state.selectedChat)) {
+      firebase
+        .firestore()
+        .collection("chats")
+        .doc(docKey)
+        .update({ receiverHasRead: true });
+    } else {
+      console.log("clicked message where the user was sender");
+    }
+  };
+
+  clickedChatWhereNotSender = chatIndex =>
+    this.state.chats[chatIndex].messages[
+      this.state.chats[chatIndex].messages.length - 1
+    ].sender !== this.state.email;
 
   componentDidMount = () => {
     firebase.auth().onAuthStateChanged(async _usr => {
