@@ -4,6 +4,7 @@ import { Button, withStyles } from "@material-ui/core";
 import styles from "./styles";
 import ChatViewComponent from "../chatView/chatView";
 import ChatTextBoxComponent from "../chatTextBox/chatTextBox";
+import NewChatComponent from "../newChat/newChat";
 
 const firebase = require("firebase");
 
@@ -25,7 +26,7 @@ class DashboardComponent extends Component {
   };
 
   selectChat = async chatIndex => {
-    await this.setState({ selectedChat: chatIndex });
+    await this.setState({ selectedChat: chatIndex, newChatFormVisible: false });
     this.messageRead();
   };
 
@@ -70,6 +71,37 @@ class DashboardComponent extends Component {
     } else {
       console.log("clicked message where the user was sender");
     }
+  };
+
+  goToChat = async (docKey, msg) => {
+    const usersInChat = docKey.split(":");
+    const chat = this.state.chats.find(_chat =>
+      usersInChat.every(_user => _chat.users.includes(_user))
+    );
+
+    this.setState({ newChatFormVisible: false });
+    await this.selectChat(this.state.chats.indexOf(chat));
+    this.submitMessage(msg);
+  };
+
+  newChatSubmit = async chatObj => {
+    const docKey = this.buildDockey(chatObj.sendTo);
+    await firebase
+      .firestore()
+      .collection("chats")
+      .doc(docKey)
+      .set({
+        receiverHasRead: false,
+        users: [this.state.email, chatObj.sendTo],
+        messages: [
+          {
+            message: chatObj.message,
+            sender: this.state.email
+          }
+        ]
+      });
+    this.setState({ newChatFormVisible: false });
+    this.selectChat(this.state.chats.length - 1);
   };
 
   clickedChatWhereNotSender = chatIndex =>
@@ -123,6 +155,12 @@ class DashboardComponent extends Component {
             messageReadFn={this.messageRead}
             submitMessageFn={this.submitMessage}
           ></ChatTextBoxComponent>
+        ) : null}
+        {this.state.newChatFormVisible ? (
+          <NewChatComponent
+            goToChatFn={this.goToChat}
+            newChatSubmitFn={this.newChatSubmit}
+          ></NewChatComponent>
         ) : null}
 
         <Button onClick={this.signOut} className={classes.signOutBtn}>
