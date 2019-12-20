@@ -37,9 +37,9 @@ export class LoginComponent extends Component {
     }
   };
 
-  submitLogin = e => {
+  submitLogin = async e => {
     e.preventDefault();
-    firebase
+    await firebase
       .auth()
       .signInWithEmailAndPassword(this.state.email, this.state.password)
       .then(
